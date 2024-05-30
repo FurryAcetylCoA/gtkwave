@@ -154,7 +154,8 @@ void fileselbox(const char *title,
 {
 #ifndef MAC_INTEGRATION
     int can_set_filename = 0;
-    GtkWidget *pFileChoose;
+    //GtkWidget *pFileChoose;
+    GtkFileChooserNative *pFileChooseNative;
     GtkWidget *pWindowMain;
     GtkFileFilter *filter;
     struct Global *old_globals = GLOBALS;
@@ -266,36 +267,34 @@ void fileselbox(const char *title,
         }
     }
 
-    if (is_writemode) {
-        pFileChoose = gtk_file_chooser_dialog_new(title,
+    if (is_writemode && 0) {
+        /*pFileChoose = gtk_file_chooser_dialog_new(title,
                                                   NULL,
                                                   GTK_FILE_CHOOSER_ACTION_SAVE,
                                                   XXX_GTK_STOCK_CANCEL,
                                                   GTK_RESPONSE_CANCEL,
                                                   XXX_GTK_STOCK_SAVE,
                                                   GTK_RESPONSE_ACCEPT,
-                                                  NULL);
+                                                  NULL);*/
 
-        gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(pFileChoose), TRUE);
+        //gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(pFileChoose), TRUE);
     } else {
-        pFileChoose = gtk_file_chooser_dialog_new(title,
+        pFileChooseNative = gtk_file_chooser_native_new(title,
                                                   NULL,
                                                   GTK_FILE_CHOOSER_ACTION_OPEN,
-                                                  XXX_GTK_STOCK_CANCEL,
-                                                  GTK_RESPONSE_CANCEL,
                                                   XXX_GTK_STOCK_OPEN,
-                                                  GTK_RESPONSE_ACCEPT,
-                                                  NULL);
+                                                  XXX_GTK_STOCK_CANCEL
+                                                  );
     }
 
-    GLOBALS->pFileChoose = pFileChoose;
+    //GLOBALS->pFileChoose = pFileChoose;
 
     if ((can_set_filename) && (*filesel_path)) {
         int flen = strlen(*filesel_path);
         if (((*filesel_path)[flen - 1] == '/') || ((*filesel_path)[flen - 1] == '\\')) {
-            gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(pFileChoose), *filesel_path);
+            gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(pFileChooseNative), *filesel_path);
         } else {
-            gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(pFileChoose), *filesel_path);
+            gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(pFileChooseNative), *filesel_path);
         }
     }
 
@@ -307,7 +306,7 @@ void fileselbox(const char *title,
         filter = gtk_file_filter_new();
         gtk_file_filter_add_pattern(filter, pattn);
         gtk_file_filter_set_name(filter, pattn);
-        gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(pFileChoose), filter);
+        gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(pFileChooseNative), filter);
 
         if (is_gtkw || is_sav) {
             const char *pattn2 = is_sav ? "*.gtkw" : "*.sav";
@@ -315,38 +314,38 @@ void fileselbox(const char *title,
             filter = gtk_file_filter_new();
             gtk_file_filter_add_pattern(filter, pattn2);
             gtk_file_filter_set_name(filter, pattn2);
-            gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(pFileChoose), filter);
+            gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(pFileChooseNative), filter);
         }
 
         if (strcmp(pattn, "*")) {
             filter = gtk_file_filter_new();
             gtk_file_filter_add_pattern(filter, "*");
             gtk_file_filter_set_name(filter, "*");
-            gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(pFileChoose), filter);
+            gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(pFileChooseNative), filter);
         }
     }
 
-    gtk_dialog_set_default_response(GTK_DIALOG(pFileChoose), GTK_RESPONSE_ACCEPT);
+    //gtk_dialog_set_default_response(GTK_DIALOG(pFileChoose), GTK_RESPONSE_ACCEPT);
 
     /* gtk_object_set_data(pFileChoose, "FileChooseWindow", pFileChoose); */
-    gtk_container_set_border_width(GTK_CONTAINER(pFileChoose), 10);
-    gtk_window_set_position(GTK_WINDOW(pFileChoose), GTK_WIN_POS_CENTER);
-    gtk_window_set_modal(GTK_WINDOW(pFileChoose), TRUE);
-    gtk_window_set_resizable(GTK_WINDOW(pFileChoose), TRUE); /* some distros need this */
-    if (pWindowMain) {
-        gtk_window_set_transient_for(GTK_WINDOW(pFileChoose), GTK_WINDOW(pWindowMain));
-    }
-    gtk_widget_show(pFileChoose);
-    wave_gtk_grab_add(pFileChoose);
+    //gtk_container_set_border_width(GTK_CONTAINER(pFileChoose), 10);
+    //gtk_window_set_position(GTK_WINDOW(pFileChoose), GTK_WIN_POS_CENTER);
+    //gtk_window_set_modal(GTK_WINDOW(pFileChoose), TRUE);
+    //gtk_window_set_resizable(GTK_WINDOW(pFileChoose), TRUE); /* some distros need this */
+    //if (pWindowMain) {
+    //    gtk_window_set_transient_for(GTK_WINDOW(pFileChoose), GTK_WINDOW(pWindowMain));
+    //}
+    //gtk_native_dialog_show (GTK_NATIVE_DIALOG (pFileChooseNative));
+    //wave_gtk_grab_add(pFileChoose);
 
     /* check against old_globals is because of DnD context swapping so make response fail */
-
-    if ((gtk_dialog_run(GTK_DIALOG(pFileChoose)) == GTK_RESPONSE_ACCEPT) &&
+// 这里处理了一种奇怪的情况，当用户在拖放的同时打开了文件选择器并且释放了拖放，则文件选择器的任何操作不会生效
+    if ((gtk_native_dialog_run(GTK_NATIVE_DIALOG(pFileChooseNative)) == GTK_RESPONSE_ACCEPT) &&
         (GLOBALS == old_globals) && (GLOBALS->fileselbox_text)) {
         const char *allocbuf;
         int alloclen;
-
-        allocbuf = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(pFileChoose));
+//获取选中的文件名并计算其长度。如果长度有效（大于零），继续处理。
+        allocbuf = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(pFileChooseNative));
         if ((alloclen = strlen(allocbuf))) {
             int gtkw_test = 0;
 
@@ -400,17 +399,17 @@ void fileselbox(const char *title,
             }
         }
 
-        DEBUG(printf("Filesel OK %s\n", allocbuf));
-        wave_gtk_grab_remove(pFileChoose);
-        gtk_widget_destroy(pFileChoose);
+        (printf("Filesel OK %s\n", allocbuf));
+        //wave_gtk_grab_remove(pFileChoose);
+        //gtk_widget_destroy(pFileChoose);
         GLOBALS->pFileChoose = NULL; /* keeps DND from firing */
 
         gtkwave_main_iteration();
         ok_func();
     } else {
-        DEBUG(printf("Filesel Entry Cancel\n"));
-        wave_gtk_grab_remove(pFileChoose);
-        gtk_widget_destroy(pFileChoose);
+        (printf("Filesel Entry Cancel\n"));
+        //wave_gtk_grab_remove(pFileChoose);
+        //gtk_widget_destroy(pFileChoose);
         GLOBALS->pFileChoose = NULL; /* keeps DND from firing */
 
         gtkwave_main_iteration();
