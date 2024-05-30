@@ -154,7 +154,6 @@ void fileselbox(const char *title,
 {
 #ifndef MAC_INTEGRATION
     int can_set_filename = 0;
-    //GtkWidget *pFileChoose;
     GtkFileChooserNative *pFileChooseNative;
     GtkWidget *pWindowMain;
     GtkFileFilter *filter;
@@ -267,17 +266,15 @@ void fileselbox(const char *title,
         }
     }
 
-    if (is_writemode && 0) {
-        /*pFileChoose = gtk_file_chooser_dialog_new(title,
+    if (is_writemode) {
+        pFileChooseNative = gtk_file_chooser_native_new(title,
                                                   NULL,
                                                   GTK_FILE_CHOOSER_ACTION_SAVE,
-                                                  XXX_GTK_STOCK_CANCEL,
-                                                  GTK_RESPONSE_CANCEL,
                                                   XXX_GTK_STOCK_SAVE,
-                                                  GTK_RESPONSE_ACCEPT,
-                                                  NULL);*/
+                                                  XXX_GTK_STOCK_CANCEL
+                                                  );
 
-        //gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(pFileChoose), TRUE);
+        gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(pFileChooseNative), TRUE);
     } else {
         pFileChooseNative = gtk_file_chooser_native_new(title,
                                                   NULL,
@@ -325,17 +322,9 @@ void fileselbox(const char *title,
         }
     }
 
-    //gtk_dialog_set_default_response(GTK_DIALOG(pFileChoose), GTK_RESPONSE_ACCEPT);
-
-    /* gtk_object_set_data(pFileChoose, "FileChooseWindow", pFileChoose); */
-    //gtk_container_set_border_width(GTK_CONTAINER(pFileChoose), 10);
-    //gtk_window_set_position(GTK_WINDOW(pFileChoose), GTK_WIN_POS_CENTER);
-    //gtk_window_set_modal(GTK_WINDOW(pFileChoose), TRUE);
-    //gtk_window_set_resizable(GTK_WINDOW(pFileChoose), TRUE); /* some distros need this */
-    //if (pWindowMain) {
-    //    gtk_window_set_transient_for(GTK_WINDOW(pFileChoose), GTK_WINDOW(pWindowMain));
-    //}
-    //gtk_native_dialog_show (GTK_NATIVE_DIALOG (pFileChooseNative));
+    if (pWindowMain) {
+        gtk_native_dialog_set_transient_for(GTK_NATIVE_DIALOG(pFileChooseNative), GTK_WINDOW(pWindowMain));
+    }
     //wave_gtk_grab_add(pFileChoose);
 
     /* check against old_globals is because of DnD context swapping so make response fail */
