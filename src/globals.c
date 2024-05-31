@@ -194,7 +194,6 @@ static const struct Global globals_base_values = {
     /*
      * main.c
      */
-    1, /* is_gtkw_save_file */
     0, /* dumpfile_is_modified */
     NULL, /* missing_file_toolbar */
     NULL, /* argvlist */
@@ -1149,7 +1148,6 @@ void reload_into_new_context_2(void)
 
     /* main.c */
     new_globals->missing_file_toolbar = GLOBALS->missing_file_toolbar;
-    new_globals->is_gtkw_save_file = GLOBALS->is_gtkw_save_file;
     new_globals->optimize_vcd = GLOBALS->optimize_vcd;
     strcpy2_into_new_context(new_globals,
                              &new_globals->winname,
@@ -1534,11 +1532,7 @@ void reload_into_new_context_2(void)
     }
 
     /* Reload state from file */
-    {
-        char is_gtkw_save_file_cached = GLOBALS->is_gtkw_save_file;
-        read_save_helper(reload_tmpfilename, NULL, NULL, NULL, NULL, NULL);
-        GLOBALS->is_gtkw_save_file = is_gtkw_save_file_cached;
-    }
+    read_save_helper(reload_tmpfilename, NULL, NULL, NULL, NULL, NULL);
 
     GLOBALS->wavewidth = gtk_widget_get_allocated_width(GTK_WIDGET(GLOBALS->wavearea));
     GLOBALS->waveheight = gtk_widget_get_allocated_height(GTK_WIDGET(GLOBALS->wavearea));

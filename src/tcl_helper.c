@@ -2225,9 +2225,7 @@ static int determine_ftype(char *s, char **dotpnt)
     *dotpnt = dot;
 
     if (dot) {
-        if (!strcasecmp("sav", dot + 1)) {
-            ftype = WAVE_FTYPE_SAVEFILE;
-        } else if (!strcasecmp("gtkw", dot + 1)) {
+        if (!strcasecmp("gtkw", dot + 1)) {
             ftype = WAVE_FTYPE_SAVEFILE;
         } else if (!strcasecmp("stems", dot + 1)) {
             ftype = WAVE_FTYPE_STEMSFILE;

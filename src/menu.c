@@ -3330,7 +3330,7 @@ void menu_write_save_file_as(gpointer null_data, guint callback_action, GtkWidge
                &GLOBALS->filesel_writesave,
                G_CALLBACK(menu_write_save_cleanup),
                G_CALLBACK(NULL),
-               GLOBALS->is_gtkw_save_file ? "*.gtkw" : "*.sav",
+               "*.gtkw",
                1);
 }
 
@@ -3354,7 +3354,7 @@ void menu_write_save_file(gpointer null_data, guint callback_action, GtkWidget *
                    &GLOBALS->filesel_writesave,
                    G_CALLBACK(menu_write_save_cleanup),
                    G_CALLBACK(NULL),
-                   GLOBALS->is_gtkw_save_file ? "*.gtkw" : "*.sav",
+                   "*.gtkw",
                    1);
     } else {
         GLOBALS->filesel_ok = 1;
@@ -3404,7 +3404,7 @@ void menu_read_save_file(gpointer null_data, guint callback_action, GtkWidget *w
                &GLOBALS->filesel_writesave,
                G_CALLBACK(menu_read_save_cleanup),
                G_CALLBACK(NULL),
-               GLOBALS->is_gtkw_save_file ? "*.gtkw" : "*.sav",
+               "*.gtkw",
                0);
 }
 

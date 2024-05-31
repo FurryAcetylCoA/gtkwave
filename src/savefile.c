@@ -30,7 +30,7 @@ char *extract_dumpname_from_save_file(char *lcname, gboolean *modified, int *opt
     off_t dumpsiz = -1;
     time_t dumptim = -1;
 
-    if ((suffix_check(lcname, ".sav")) || (suffix_check(lcname, ".gtkw"))) {
+    if (suffix_check(lcname, ".gtkw")) {
         read_save_helper(lcname, &dfn, &sfn, &dumpsiz, &dumptim, opt_vcd);
 
 #if defined __USE_BSD || defined __USE_XOPEN_EXTENDED || defined __CYGWIN__ || \
@@ -648,9 +648,6 @@ int read_save_helper(char *wname,
     char traces_already_exist = (GLOBALS->traces.first != NULL);
     int rc = -1;
     int extract_dumpfile_savefile_only = (dumpfile != NULL) && (savefile != NULL);
-
-    GLOBALS->is_gtkw_save_file = suffix_check(wname, ".gtkw") || suffix_check(wname, ".gtkw.gz") ||
-                                 suffix_check(wname, ".gtkw.zip");
 
     if (suffix_check(wname, ".gz") || suffix_check(wname, ".zip")) {
         str = g_alloca(strlen(wname) + 5 + 1);
@@ -2309,7 +2306,7 @@ gboolean process_finder_name_integration(void)
             time_t dumptim = -1;
             int optimize_vcd = 0;
 
-            if ((suffix_check(lcname, ".sav")) || (suffix_check(lcname, ".gtkw"))) {
+            if (suffix_check(lcname, ".gtkw")) {
                 reload_save_file = 1;
                 try_to_load_file = 0;
 
@@ -2433,8 +2430,7 @@ gboolean deal_with_rpc_open_2(const gchar *path, gpointer user_data, gboolean is
 #ifdef EXTLOAD_SUFFIX
                               EXTLOAD_SUFFIX,
 #endif
-                              ".gtkw",
-                              ".sav"};
+                              ".gtkw"};
 
     const int num_suffixes = sizeof(suffixes) / sizeof(const char *);
     int i, mat = 0;

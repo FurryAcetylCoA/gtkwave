@@ -1318,8 +1318,7 @@ do_primary_inits:
 
     /* attempt to load a dump+save file if only a savefile is specified at the command line */
     if ((GLOBALS->loaded_file_name) && (!wname) &&
-        (suffix_check(GLOBALS->loaded_file_name, ".gtkw") ||
-         suffix_check(GLOBALS->loaded_file_name, ".sav"))) {
+        (suffix_check(GLOBALS->loaded_file_name, ".gtkw"))) {
         char *extracted_name = extract_dumpname_from_save_file(GLOBALS->loaded_file_name,
                                                                &GLOBALS->dumpfile_is_modified,
                                                                &opt_vcd);

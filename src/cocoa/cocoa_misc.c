@@ -28,6 +28,7 @@ void gtk_open_external_file(const char *fpath)
 /* file.c                */
 /*************************/
 
+//TODO: Remove .sav support
 static char *gtk_open_file_req_bridge(const char *title, const char *fpath, const char *pattn)
 {
     NSOpenPanel *zOpenPanel = [NSOpenPanel openPanel];
