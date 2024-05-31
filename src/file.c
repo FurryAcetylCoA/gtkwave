@@ -325,6 +325,7 @@ void fileselbox(const char *title,
     if (pWindowMain) {
         gtk_native_dialog_set_transient_for(GTK_NATIVE_DIALOG(pFileChooseNative), GTK_WINDOW(pWindowMain));
     }
+    gtk_native_dialog_set_modal(GTK_NATIVE_DIALOG(pFileChooseNative),TRUE);
     //wave_gtk_grab_add(pFileChoose);
 
     /* check against old_globals is because of DnD context swapping so make response fail */
