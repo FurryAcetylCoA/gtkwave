@@ -257,7 +257,7 @@ void fileselbox(const char *title,
                                                   );
     }
 
-    //GLOBALS->pFileChoose = pFileChoose;
+    GLOBALS->pFileChoose = pFileChooseNative;
 
     if ((can_set_filename) && (*filesel_path)) {
         int flen = strlen(*filesel_path);
@@ -363,7 +363,6 @@ void fileselbox(const char *title,
                 GLOBALS->is_gtkw_save_file = suffix_check(*GLOBALS->fileselbox_text, ".gtkw");
             }
         }
-
         DEBUG(printf("Filesel OK %s\n", allocbuf));
 #ifdef MAC_INTEGRATION
         osx_menu_sensitivity(TRUE);
