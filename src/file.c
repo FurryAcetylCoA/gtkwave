@@ -304,12 +304,12 @@ void fileselbox(const char *title,
 #endif
 
     /* check against old_globals is because of DnD context swapping so make response fail */
-// 这里处理了一种奇怪的情况，当用户在拖放的同时打开了文件选择器并且释放了拖放，则文件选择器的任何操作不会生效
+
     if ((gtk_native_dialog_run(GTK_NATIVE_DIALOG(pFileChooseNative)) == GTK_RESPONSE_ACCEPT) &&
         (GLOBALS == old_globals) && (GLOBALS->fileselbox_text)) {
         const char *allocbuf;
         int alloclen;
-//获取选中的文件名并计算其长度。如果长度有效（大于零），继续处理。
+
         allocbuf = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(pFileChooseNative));
         if ((alloclen = strlen(allocbuf))) {
             int gtkw_test = 0;
