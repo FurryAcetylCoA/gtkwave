@@ -18,10 +18,6 @@
 /* #include <fnmatch.h> */
 
 
-#if defined __MINGW32__
-#include <windows.h>
-#endif
-
 void fileselbox_old(const char *title,
                     char **filesel_path,
                     GCallback ok_func,
