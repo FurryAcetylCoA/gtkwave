@@ -360,12 +360,12 @@ static char *wave_get_filename(char *dfile)
         }
 #endif
     }
-    fileselbox_old("GTKWave: Select a dumpfile...",
-                   &GLOBALS->ftext_main_main_c_1,
-                   G_CALLBACK(wave_get_filename_cleanup),
-                   G_CALLBACK(wave_get_filename_cleanup),
-                   NULL,
-                   0);
+    fileselbox("GTKWave: Select a dumpfile...",
+                &GLOBALS->ftext_main_main_c_1,
+                G_CALLBACK(wave_get_filename_cleanup),
+                G_CALLBACK(wave_get_filename_cleanup),
+                NULL,
+                0);
     gtk_main();
 
     return (GLOBALS->ftext_main_main_c_1);
