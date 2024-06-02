@@ -588,6 +588,9 @@ char *realpath_2(const char *path, char *resolved_path)
     }
     return (_fullpath(resolved_path, path, PATH_MAX));
 #else
+#if __GNUC__
+#warning Absolute file path warnings might be issued by the file chooser dialogue on this system!
+#endif
     return (NULL);
 #endif
 #endif
