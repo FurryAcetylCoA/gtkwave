@@ -293,7 +293,7 @@ static void print_help(char *nam)
 
     printf(
         "Usage: %s [OPTION]... [DUMPFILE] [SAVEFILE] [RCFILE]\n\n"
-        "  -n, --nocli=DIRPATH        use file requester for dumpfile name\n"
+        "  -n, --nocli=DIRPATH        use file selection dialog for dumpfile or savefile\n"
         "  -f, --dump=FILE            specify dumpfile name\n" VCD_GETOPT
         "  -a, --save=FILE            specify savefile name\n"
         "  -r, --rcfile=FILE          specify override .rcfile name\n"
@@ -366,7 +366,6 @@ static char *wave_get_filename(char *dfile)
                 G_CALLBACK(wave_get_filename_cleanup),
                 NULL,
                 0);
-    gtk_main();
 
     return (GLOBALS->ftext_main_main_c_1);
 }
