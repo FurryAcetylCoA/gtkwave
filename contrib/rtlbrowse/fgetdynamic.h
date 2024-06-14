@@ -12,12 +12,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-
-struct alloc_bytechain
-{
-char val;
-struct alloc_bytechain *next;
-};
+#include <glib.h>
 
 char *fgetmalloc(FILE *handle);
 extern int fgetmalloc_len;
