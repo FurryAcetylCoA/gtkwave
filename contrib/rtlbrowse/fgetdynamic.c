@@ -27,49 +27,39 @@ int fgetmalloc_len;
 
 char *fgetmalloc(FILE *handle)
 {
-char *pnt, *pnt2;
-struct alloc_bytechain *bytechain_root=NULL, *bytechain_current=NULL;
-int ch;
+    char *pnt, *pnt2;
+    struct alloc_bytechain *bytechain_root = NULL, *bytechain_current = NULL;
+    int ch;
 
-fgetmalloc_len=0;
+    fgetmalloc_len = 0;
 
-for(;;)
-	{
-	ch=fgetc(handle);
-	if((ch==EOF)||(ch==0x00)||(ch=='\n')||(ch=='\r')) break;
-	fgetmalloc_len++;
-	if(bytechain_current)
-		{
-		bytechain_current->next=alloca(sizeof(struct alloc_bytechain));
-		bytechain_current=bytechain_current->next;
-		bytechain_current->val=(char)ch;
-		bytechain_current->next=NULL;
-		}
-		else
-		{
-		bytechain_root=bytechain_current=alloca(sizeof(struct alloc_bytechain));
-		bytechain_current->val=(char)ch;
-		bytechain_current->next=NULL;
-		}
-	}
+    for (;;) {
+        ch = fgetc(handle);
+        if ((ch == EOF) || (ch == 0x00) || (ch == '\n') || (ch == '\r'))
+            break;
+        fgetmalloc_len++;
+        if (bytechain_current) {
+            bytechain_current->next = alloca(sizeof(struct alloc_bytechain));
+            bytechain_current = bytechain_current->next;
+            bytechain_current->val = (char)ch;
+            bytechain_current->next = NULL;
+        } else {
+            bytechain_root = bytechain_current = alloca(sizeof(struct alloc_bytechain));
+            bytechain_current->val = (char)ch;
+            bytechain_current->next = NULL;
+        }
+    }
 
-if(!fgetmalloc_len)
-	{
-	return(NULL);
-	}
-	else
-	{
-	pnt=pnt2=(char *)malloc(fgetmalloc_len+1);
-	while(bytechain_root)
-		{
-		*(pnt2++)=bytechain_root->val;
-		bytechain_root=bytechain_root->next;
-		}
-	*(pnt2)=0;
+    if (!fgetmalloc_len) {
+        return (NULL);
+    } else {
+        pnt = pnt2 = (char *)malloc(fgetmalloc_len + 1);
+        while (bytechain_root) {
+            *(pnt2++) = bytechain_root->val;
+            bytechain_root = bytechain_root->next;
+        }
+        *(pnt2) = 0;
 
-	return(pnt);
-	}
-
-
+        return (pnt);
+    }
 }
-
