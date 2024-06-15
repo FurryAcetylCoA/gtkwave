@@ -202,6 +202,7 @@ void recurse_into_modules(char *compname_build,
     }
 }
 
+/* Recursively counts the total number of nodes in ds_Tree */
 void rec_tree(ds_Tree *t, int *cnt)
 {
     if (!t)
@@ -218,6 +219,7 @@ void rec_tree(ds_Tree *t, int *cnt)
     }
 }
 
+/* Recursively populates an array with ds_tree_node in inorder traversal sequence */
 void rec_tree_populate(ds_Tree *t, int *cnt, ds_Tree **list_root)
 {
     if (!t)
@@ -235,80 +237,9 @@ void rec_tree_populate(ds_Tree *t, int *cnt, ds_Tree **list_root)
     }
 }
 
-int main_2r(int argc, char **argv)
+ds_Tree *load_stems_file(FILE *f)
 {
-    FILE *f;
     ds_Tree *modules = NULL;
-    char *id;
-    int i;
-    int len;
-
-    if (argc != 2) {
-        printf("Usage:\n------\n%s stems_filename\n\n", argv[0]);
-        exit(0);
-    }
-
-    id = argv[1];
-    len = strlen(id);
-
-    for (i = 0; i < len; i++) {
-        if (!isxdigit((int)(unsigned char)id[i]))
-            break;
-    }
-    if (i == len) {
-        unsigned int shmid;
-
-        sscanf(id, "%x", &shmid);
-#ifdef __MINGW32__
-        {
-            HANDLE hMapFile;
-            char mapName[257];
-
-            sprintf(mapName, "rtlbrowse%d", shmid);
-            hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, mapName);
-            if (hMapFile == NULL) {
-                fprintf(stderr,
-                        "Could not attach shared memory map name '%s', exiting.\n",
-                        mapName);
-                exit(255);
-            }
-            anno_ctx = MapViewOfFile(hMapFile,
-                                     FILE_MAP_ALL_ACCESS,
-                                     0,
-                                     0,
-                                     sizeof(struct gtkwave_annotate_ipc_t));
-            if (anno_ctx == NULL) {
-                fprintf(stderr, "Could not map view of file '%s', exiting.\n", mapName);
-                exit(255);
-            }
-        }
-#else
-        anno_ctx = shmat(shmid, NULL, 0);
-#endif
-        if (anno_ctx != (void *)-1) {
-            if ((!memcmp(anno_ctx->matchword, WAVE_MATCHWORD, 4)) &&
-                (anno_ctx->aet_type > WAVE_ANNO_NONE) && (anno_ctx->aet_type < WAVE_ANNO_MAX)) {
-                id = anno_ctx->stems_name;
-            } else {
-                shmdt((void *)anno_ctx);
-                fprintf(stderr, "Not a valid shared memory ID from gtkwave, exiting.\n");
-                exit(255);
-            }
-        } else {
-            id = argv[1];
-        }
-    } else {
-        id = argv[1];
-    }
-
-    f = fopen(id, "rb");
-    if (!f) {
-        fprintf(stderr, "*** Could not open '%s'\n", id);
-        perror("Why");
-        exit(255);
-    }
-
-    /* read_filename: */
     while (!feof(f)) {
         char *ln = fgetmalloc(f);
 
@@ -367,13 +298,89 @@ int main_2r(int argc, char **argv)
 
         free(ln);
     }
+    return modules;
+}
+
+int parse_args(int argc, char **argv)
+{
+    FILE *f;
+    char *id;
+    ds_Tree *modules = NULL;
+    int i;
+    int len;
+
+    if (argc != 2) {
+        printf("Usage:\n------\n%s stems_filename\n\n", argv[0]);
+        exit(0);
+    }
+
+    id = argv[1];
+    len = strlen(id);
+
+    /* Determine whether argv[1] is file name or shmid */
+    for (i = 0; i < len; i++) {
+        if (!isxdigit((int)(unsigned char)id[i]))
+            break;
+    }
+    if (i == len) {
+        unsigned int shmid;
+
+        sscanf(id, "%x", &shmid);
+#ifdef __MINGW32__
+        {
+            HANDLE hMapFile;
+            char mapName[257];
+
+            sprintf(mapName, "rtlbrowse%d", shmid);
+            hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, mapName);
+            if (hMapFile == NULL) {
+                fprintf(stderr,
+                        "Could not attach shared memory map name '%s', exiting.\n",
+                        mapName);
+                exit(255);
+            }
+            anno_ctx = MapViewOfFile(hMapFile,
+                                     FILE_MAP_ALL_ACCESS,
+                                     0,
+                                     0,
+                                     sizeof(struct gtkwave_annotate_ipc_t));
+            if (anno_ctx == NULL) {
+                fprintf(stderr, "Could not map view of file '%s', exiting.\n", mapName);
+                exit(255);
+            }
+        }
+#else
+        anno_ctx = shmat(shmid, NULL, 0);
+#endif
+        if (anno_ctx != (void *)-1) {
+            if ((!memcmp(anno_ctx->matchword, WAVE_MATCHWORD, 4)) &&
+                (anno_ctx->aet_type > WAVE_ANNO_NONE) && (anno_ctx->aet_type < WAVE_ANNO_MAX)) {
+                id = anno_ctx->stems_name;
+            } else {
+                shmdt((void *)anno_ctx);
+                fprintf(stderr, "Not a valid shared memory ID from gtkwave, exiting.\n");
+                exit(255);
+            }
+        } else {
+            id = argv[1];
+        }
+    } else {
+        id = argv[1];
+    }
+
+    f = fopen(id, "rb");
+    if (!f) {
+        fprintf(stderr, "*** Could not open '%s'\n", id);
+        perror("Why");
+        exit(255);
+    }
+    modules = load_stems_file(f);
     fclose(f);
 
     mod_cnt = 0;
     rec_tree(modules, &mod_cnt);
     /* printf("number of modules: %d\n", mod_cnt); */
-
-    mod_list = calloc(mod_cnt /* scan-build */ ? mod_cnt : 1, sizeof(ds_Tree *));
+    mod_list = calloc(mod_cnt ? mod_cnt : 1, sizeof(ds_Tree *));
     mod_cnt = 0;
     rec_tree_populate(modules, &mod_cnt, mod_list);
 
@@ -425,7 +432,7 @@ int main(int argc, char **argv)
 {
     WAVE_LOCALE_FIX
 
-    main_2r(argc, argv);
+    parse_args(argc, argv);
 
     if (!gtk_init_check(&argc, &argv)) {
         printf("Could not initialize GTK!  Is DISPLAY env var/xhost set?\n\n");
