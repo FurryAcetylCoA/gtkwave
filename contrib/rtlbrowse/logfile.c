@@ -1374,7 +1374,7 @@ static void destroy_callback(GtkWidget *widget, gpointer dummy)
     }
 
     if (matched)
-        gtk_widget_destroy(matched);
+        gtk_notebook_detach_tab(GTK_NOTEBOOK(notebook),matched);
 
     if (ctx) {
         JRB node;
