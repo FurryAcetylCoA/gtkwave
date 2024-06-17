@@ -1476,16 +1476,18 @@ void bwlogbox(char *title, int width, ds_Tree *t, int display_mode)
         /* setup close button */
         close_button = gtk_button_new();
         gtk_button_set_relief(GTK_BUTTON(close_button), GTK_RELIEF_NONE);
+        gtk_widget_set_margin_start(close_button, 5);
+
         /* don't allow focus on the close button */
         gtk_widget_set_focus_on_click(GTK_WIDGET(close_button), FALSE);
 
         /* make it as small as possible */
 
-        image = gtk_image_new_from_icon_name(XXX_GTK_STOCK_CLOSE, GTK_ICON_SIZE_MENU);
-        gtk_container_add(GTK_CONTAINER(close_button), image);
+        image = gtk_image_new_from_icon_name(XXX_GTK_STOCK_CLOSE,
+                                             GTK_ICON_SIZE_MENU); // Adapt to icon size API changes 4
+        gtk_button_set_image(GTK_BUTTON(close_button), image);
         /* ...code from gedit */
 
-        gtk_widget_show(image);
         gtk_widget_show(close_button);
 
         gtk_box_pack_start(GTK_BOX(tbox), l1, FALSE, FALSE, 0);
