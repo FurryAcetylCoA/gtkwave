@@ -136,26 +136,30 @@ static gint draw_event(GtkWidget *widget, cairo_t *cr, gpointer user_data)
     return (expose_event_local(widget, NULL));
 }
 
-GtkWidget *XXX_gtk_toolbar_insert_stock(GtkToolbar *toolbar,
-                                        const gchar *stock_id,
-                                        const char *tooltip_text,
-                                        const char *tooltip_private_text,
-                                        GCallback callback,
-                                        gpointer user_data,
-                                        gint position)
+/*
+ * Create a button inside a box with given
+ * stock icon id and tooltip text
+ */
+void create_button_in_box(GtkWidget *box,
+                          const gchar *stock_id,
+                          const char *tooltip_text,
+                          GCallback callback,
+                          gpointer user_data)
 {
-    (void)tooltip_private_text;
-    GtkToolItem *button;
-
+    GtkWidget *button = gtk_button_new();
     GtkWidget *icon_widget = gtk_image_new_from_icon_name(stock_id, GTK_ICON_SIZE_BUTTON);
 
-    gtk_widget_show(icon_widget);
-    button = gtk_tool_button_new(icon_widget, NULL);
-    gtk_tool_item_set_tooltip_text(button, tooltip_text);
-    gtk_toolbar_insert(GTK_TOOLBAR(toolbar), button, position);
+    gtk_button_set_image(GTK_BUTTON(button), icon_widget);
+    gtk_button_set_relief(GTK_BUTTON(button), GTK_RELIEF_NONE);
 
+    gtk_widget_set_tooltip_text(button, tooltip_text);
+    gtk_widget_set_margin_top(button, 7);
+    gtk_widget_set_margin_bottom(button, 7);
+
+    gtk_box_pack_start(GTK_BOX(box), button, TRUE, TRUE, 0);
     g_signal_connect(button, "clicked", G_CALLBACK(callback), user_data);
-    return (GTK_WIDGET(button));
+
+    gtk_widget_show(button);
 }
 
 void read_insert_position(struct text_find_t *tr)
@@ -512,12 +516,12 @@ void create_toolbar(GtkWidget *table)
 {
     GtkWidget *find_label;
     GtkWidget *find_entry;
-    GtkWidget *tb;
+    GtkWidget *box;
     GtkWidget *stock;
     GtkWidget *hbox;
     GtkEventController *controller;
-    int tb_pos = 0;
-    hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 1);
+
+    hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
     gtk_box_set_homogeneous(GTK_BOX(hbox), FALSE);
     gtk_widget_show(hbox);
 
@@ -538,32 +542,22 @@ void create_toolbar(GtkWidget *table)
 
     gtk_box_pack_start(GTK_BOX(hbox), find_entry, FALSE, FALSE, 0);
 
-    tb = gtk_toolbar_new();
-    gtk_widget_show(tb);
+    box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
+    gtk_widget_show(box);
 
-    gtk_toolbar_set_style(GTK_TOOLBAR(tb), GTK_TOOLBAR_ICONS);
-    stock = XXX_gtk_toolbar_insert_stock(GTK_TOOLBAR(tb),
-                                         XXX_GTK_STOCK_GO_BACK,
-                                         "Search Back",
-                                         NULL,
-                                         G_CALLBACK(search_backward),
-                                         NULL,
-                                         tb_pos++);
+    create_button_in_box(GTK_WIDGET(box),
+                         XXX_GTK_STOCK_GO_BACK,
+                         "Search Back",
+                         G_CALLBACK(search_backward),
+                         NULL);
 
-    gtk_widget_show(stock);
+    create_button_in_box(GTK_WIDGET(box),
+                         XXX_GTK_STOCK_GO_FORWARD,
+                         "Search Forward",
+                         G_CALLBACK(search_forward),
+                         NULL);
 
-    stock =
-        XXX_gtk_toolbar_insert_stock(GTK_TOOLBAR(tb),
-                                     XXX_GTK_STOCK_GO_FORWARD,
-                                     "Search Forward",
-                                     NULL,
-                                     G_CALLBACK(search_forward),
-                                     NULL,
-                                     tb_pos); /* scan-build: removed ++ on tb_pos as never read */
-
-    gtk_widget_show(stock);
-
-    gtk_box_pack_start(GTK_BOX(hbox), tb, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), box, FALSE, FALSE, 0); // TODO: Use gtk_box_append() in gtk4
 
     matchcase_checkbutton = gtk_check_button_new_with_label("Match case");
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(matchcase_checkbutton), matchcase_active);
