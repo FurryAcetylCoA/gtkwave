@@ -1434,6 +1434,9 @@ void bwlogbox(char *title, int width, ds_Tree *t, int display_mode)
     GtkWidget *label, *separator;
     GtkWidget *ctext;
     GtkWidget *text;
+    GtkWidget *tbox;
+    GtkWidget *l1;
+    GtkWidget *image;
     GtkWidget *close_button = NULL;
     gint pagenum = 0;
     FILE *handle;
@@ -1449,67 +1452,51 @@ void bwlogbox(char *title, int width, ds_Tree *t, int display_mode)
     }
     fclose(handle);
 
-    /* nothing */
-
-    /* create a new nonmodal window */
-    if (!notebook) {
-        window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-        if (fontname_logfile) {
-            set_winsize(window, width * 1.8, 640);
-        } else {
-            set_winsize(window, width, 640);
-        }
-        gtk_window_set_title(GTK_WINDOW(window), title);
+    if (!notebook) { /* Keep this just in case. Can be removed in furute version */
+        fprintf(stderr,
+                "Internal error: notebook should be constructed at this point. Please report this "
+                "as a bug\n");
     }
 
-    else {
-        GtkWidget *tbox;
-        GtkWidget *l1;
-        GtkWidget *image;
+    window = gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
+    tbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_box_set_homogeneous(GTK_BOX(tbox), FALSE);
+    l1 = gtk_label_new(title);
 
-        window = gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
-        tbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-        gtk_box_set_homogeneous(GTK_BOX(tbox), FALSE);
-        l1 = gtk_label_new(title);
+    /* code from gedit... */
+    /* setup close button */
+    close_button = gtk_button_new();
+    gtk_button_set_relief(GTK_BUTTON(close_button), GTK_RELIEF_NONE);
+    gtk_widget_set_margin_start(close_button, 5);
 
-        /* code from gedit... */
-        /* setup close button */
-        close_button = gtk_button_new();
-        gtk_button_set_relief(GTK_BUTTON(close_button), GTK_RELIEF_NONE);
-        gtk_widget_set_margin_start(close_button, 5);
+    /* don't allow focus on the close button */
+    gtk_widget_set_focus_on_click(GTK_WIDGET(close_button), FALSE);
 
-        /* don't allow focus on the close button */
-        gtk_widget_set_focus_on_click(GTK_WIDGET(close_button), FALSE);
+    /* make it as small as possible */
 
-        /* make it as small as possible */
+    image = gtk_image_new_from_icon_name(XXX_GTK_STOCK_CLOSE,
+                                         GTK_ICON_SIZE_MENU); // Adapt to icon size API changes 4
+    gtk_button_set_image(GTK_BUTTON(close_button), image);
+    /* ...code from gedit */
 
-        image = gtk_image_new_from_icon_name(XXX_GTK_STOCK_CLOSE,
-                                             GTK_ICON_SIZE_MENU); // Adapt to icon size API changes 4
-        gtk_button_set_image(GTK_BUTTON(close_button), image);
-        /* ...code from gedit */
+    gtk_widget_show(close_button);
 
-        gtk_widget_show(close_button);
+    gtk_box_pack_start(GTK_BOX(tbox), l1, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(tbox), close_button, FALSE, FALSE, 0);
 
-        gtk_box_pack_start(GTK_BOX(tbox), l1, FALSE, FALSE, 0);
-        gtk_box_pack_start(GTK_BOX(tbox), close_button, FALSE, FALSE, 0);
+    gtk_widget_show(l1);
+    gtk_widget_show(tbox);
 
-        gtk_widget_show(l1);
-        gtk_widget_show(tbox);
-
-        pagenum = gtk_notebook_append_page_menu(GTK_NOTEBOOK(notebook),
-                                                window,
-                                                tbox,
-                                                gtk_label_new(title));
-
-        g_signal_connect(close_button,
-                         "button_release_event",
-                         G_CALLBACK(destroy_via_closebutton_release),
-                         NULL); /* this will destroy the tab by destroying the parent container */
-    }
+    pagenum =
+        gtk_notebook_append_page_menu(GTK_NOTEBOOK(notebook), window, tbox, gtk_label_new(title));
+    g_signal_connect(close_button,
+                     "button_release_event",
+                     G_CALLBACK(destroy_via_closebutton_release),
+                     NULL); /* this will destroy the tab by destroying the parent container */
 
     vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 1);
     gtk_box_set_homogeneous(GTK_BOX(vbox), FALSE);
-    gtk_container_add(GTK_CONTAINER(window), vbox);
+    gtk_paned_add1(GTK_PANED(window), vbox);
     gtk_widget_show(vbox);
 
     label = gtk_label_new(default_text);
