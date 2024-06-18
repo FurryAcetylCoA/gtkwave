@@ -76,7 +76,7 @@ gboolean update_ctx_when_idle(gpointer textview_or_dummy);
 
 static struct text_find_t *text_root = NULL;
 static struct text_find_t *selected_text_via_tab = NULL;
-static GtkWidget *matchcase_checkbutton = NULL;
+static GtkWidget *matchcase_checkbutton = NULL; //TODO: Adapt to button class hierarchy changes in gtk4
 static gboolean matchcase_active = FALSE;
 static char *fontname_logfile = NULL;
 
@@ -187,7 +187,7 @@ void set_insert_position(struct text_find_t *tr)
     tr->offs = (tr->offs > llen) ? llen : tr->offs;
     gtk_text_iter_set_line_offset(&iter, tr->offs);
 
-    gtk_text_buffer_place_cursor(tb, &iter);
+    gtk_text_buffer_place_cursor(tb, &iter); // TODO: check "Adapt to cursor API changes" in gtk4
 }
 
 static void forward_chars_with_skipping(GtkTextIter *iter, gint count)
@@ -289,6 +289,9 @@ void tr_search_forward(char *str, gboolean noskip)
 
         if (!noskip)
             if ((tr->line == tr->srch_line) && (tr->offs == tr->srch_offs)) {
+                // Ensure search starts from the next character
+                // Otherwise "Search Forward" or [ENTER] can never jumps to the
+                // next place
                 gtk_text_iter_forward_char(&iter);
             }
 
@@ -464,13 +467,11 @@ static void search_forward(GtkWidget *widget, gpointer data)
 
 /* Signal callback for the filter widget.
    This catch the return key to update the signal area.  */
-static gboolean find_edit_cb(
-    GtkEventControllerKey* controller,
-    guint keyval,
-    guint keycode,
-    GdkModifierType* state,
-    GtkWidget*  self
-)
+static gboolean find_edit_cb(GtkEventControllerKey *controller,
+                             guint keyval,
+                             guint keycode,
+                             GdkModifierType *state,
+                             GtkWidget *self)
 {
     (void)keycode;
     (void)state;
@@ -1248,12 +1249,14 @@ static GtkWidget *create_log_text(GtkWidget **textpnt)
                                    GTK_POLICY_AUTOMATIC,
                                    GTK_POLICY_AUTOMATIC);
     gtk_container_add(GTK_CONTAINER(scrolled_window), text);
+    // TODO: use gtk_scrolled_window_set_child in gtk4
     gtk_container_set_border_width(GTK_CONTAINER(scrolled_window), 5);
     gtk_widget_show(scrolled_window);
 
     /* Add a handler to put a message in the text widget when it is realized */
     g_signal_connect(text, "realize", G_CALLBACK(log_realize_text), NULL);
 
+    // TODO: Replace with GtkGestureClick in gtk4
     g_signal_connect(text, "button_release_event", G_CALLBACK(button_release_event), NULL);
 
     gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(text), GTK_WRAP_CHAR);
@@ -1347,7 +1350,7 @@ static void destroy_callback(GtkWidget *widget, gpointer dummy)
 
     struct text_find_t *t = text_root, *tprev = NULL;
     struct logfile_context_t *ctx = NULL;
-    int which = (notebook != NULL);
+    int which = (notebook != NULL);  // TODO: Check if notebook is always not null at this point
     GtkWidget *matched = NULL;
 
     while (t) {
@@ -1489,6 +1492,7 @@ void bwlogbox(char *title, int width, ds_Tree *t, int display_mode)
 
     pagenum =
         gtk_notebook_append_page_menu(GTK_NOTEBOOK(notebook), window, tbox, gtk_label_new(title));
+    // TODO: Replace with GtkGestureClick in gtk4
     g_signal_connect(close_button,
                      "button_release_event",
                      G_CALLBACK(destroy_via_closebutton_release),
@@ -1497,6 +1501,8 @@ void bwlogbox(char *title, int width, ds_Tree *t, int display_mode)
     vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 1);
     gtk_box_set_homogeneous(GTK_BOX(vbox), FALSE);
     gtk_paned_add1(GTK_PANED(window), vbox);
+    // TODO: change to gtk_paned_set_end_child in gtk4
+    // TODO: Check if this vbox can be safely removed.
     gtk_widget_show(vbox);
 
     label = gtk_label_new(default_text);
@@ -1510,7 +1516,7 @@ void bwlogbox(char *title, int width, ds_Tree *t, int display_mode)
     ctext = create_log_text(&text);
     gtk_box_pack_start(GTK_BOX(vbox), ctext, TRUE, TRUE, 0);
     gtk_widget_show(ctext);
-
+    // TODO: Replace with GtkGestureClick in gtk4
     g_signal_connect(text, "button_press_event", G_CALLBACK(button_press_event), NULL);
 
     separator = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);

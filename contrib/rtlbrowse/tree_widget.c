@@ -168,8 +168,10 @@ void treebox(char *title, GCallback func, GtkWidget *old_window, GtkApplication 
                                    GTK_POLICY_AUTOMATIC);
     gtk_widget_show(scrolled_win);
     gtk_container_add(GTK_CONTAINER(scrolled_win), GTK_WIDGET(treeview_main));
+    // TODO: Adapt to GtkBin removal in gtk4
     gtk_tree_selection_set_select_function(
-        gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview_main)),
+        gtk_tree_view_get_selection(
+            GTK_TREE_VIEW(treeview_main)), // TODO: Stop using APIs to query GdkSurfaces in gtk4
         XXX_view_selection_func,
         NULL,
         NULL);
@@ -181,6 +183,7 @@ void treebox(char *title, GCallback func, GtkWidget *old_window, GtkApplication 
     create_toolbar(table);
 
     gtk_container_add(GTK_CONTAINER(window), table);
+    // TODO: Use gtk_window_set_child in gtk4
 
     gtk_widget_show(window);
     setup_dnd(window);
